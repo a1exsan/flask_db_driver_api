@@ -154,6 +154,6 @@ def update_file_data(db_name, tab_name, record_id):
     return 'Server error', 404
 
 
-if __name__ == '__main__':
-    app.run(port=8881, debug=True)
+#if __name__ == '__main__':
+#    app.run(port=8881, debug=True)
     #app.run(debug=True)
