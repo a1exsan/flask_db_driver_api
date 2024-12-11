@@ -155,5 +155,5 @@ def update_file_data(db_name, tab_name, record_id):
 
 
 if __name__ == '__main__':
-    #app.run(port=8881, debug=True)
-    app.run(debug=True)
+    app.run(port=8881, debug=True)
+    #app.run(debug=True)
