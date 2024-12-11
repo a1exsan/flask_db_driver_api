@@ -1,5 +1,15 @@
 {
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/uny_db_app" }
+  "version": 2,
+  "builds": [
+    {
+      "src": "uny_db_app.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "uny_db_app.py"
+    }
   ]
 }
