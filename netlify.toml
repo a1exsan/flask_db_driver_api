@@ -1,0 +1,8 @@
+[build]
+  functions = ""
+  publish = "public"
+
+[[redirects]]
+  from = "/*"
+  to = "/.netlify/uny_db_app"
+  status = 200
