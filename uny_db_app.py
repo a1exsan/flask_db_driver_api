@@ -1,12 +1,14 @@
 from fileinput import filename
 
 from flask import Flask, request
+from flask_cors import CORS
 import uny_db_driver
 import json
 import logging
 import base64
 
 app = Flask(__name__)
+CORS(app)
 
 #logging.basicConfig(level=logging.DEBUG)
 
