@@ -1,9 +1,11 @@
 from fileinput import filename
 
-from flask import Flask, request
+from flask import Flask, request, Response
 from flask_cors import CORS
 import uny_db_driver
 import json
+import os.path
+import pickle
 import logging
 import base64
 
@@ -155,7 +157,22 @@ def update_file_data(db_name, tab_name, record_id):
     #app.logger.info(status)
     return 'Server error', 404
 
+@app.route('/get_lcms_json_data/<file_name>', methods=['GET'])
+def get_json_file_data(file_name):
+    if os.path.exists(file_name):
+        with open(f'lcms_files/{file_name}', 'r') as f:
+            data = f.read()
+        return data
+    else:
+        return ''
+
+@app.route('/post_lcms_json_data/<file_name>', methods=['POST'])
+def save_json_file_data(file_name):
+    with open(f'lcms_files/{file_name}', 'w') as f:
+        f.write(request.json)
+
+
 
 if __name__ == '__main__':
 #    app.run(port=8881, debug=True)
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=8012, debug=True)
