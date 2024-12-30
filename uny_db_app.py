@@ -159,12 +159,12 @@ def update_file_data(db_name, tab_name, record_id):
 
 @app.route('/get_lcms_json_data/<file_name>', methods=['GET'])
 def get_json_file_data(file_name):
-    if os.path.exists(file_name):
+    try:
         with open(f'lcms_files/{file_name}', 'r') as f:
-            data = f.read()
-        return data
-    else:
-        return ''
+            data = json.load(f)
+        return data, 200
+    except:
+        return 'No file', 200
 
 @app.route('/post_lcms_json_data/<file_name>', methods=['POST'])
 def save_json_file_data(file_name):
