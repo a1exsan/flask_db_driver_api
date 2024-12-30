@@ -168,8 +168,12 @@ def get_json_file_data(file_name):
 
 @app.route('/post_lcms_json_data/<file_name>', methods=['POST'])
 def save_json_file_data(file_name):
-    with open(f'lcms_files/{file_name}', 'w') as f:
-        f.write(request.json)
+    try:
+        with open(f'lcms_files/{file_name}', 'w') as f:
+            f.write(request.json)
+        return f'succesfully saved {file_name}', 200
+    except:
+        return f'file not saved {file_name}', 404
 
 
 
