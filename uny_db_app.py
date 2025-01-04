@@ -1,22 +1,15 @@
-from fileinput import filename
 
-from flask import Flask, request, Response
+from flask import Flask, request
 from flask_cors import CORS
 import uny_db_driver
 import json
-import os.path
-import pickle
-import logging
-import base64
 
 app = Flask(__name__)
 CORS(app)
 
-#logging.basicConfig(level=logging.DEBUG)
-
-@app.route('/')
+@app.route('/example', methods=['GET', 'POST'])
 def home():
-    return 'UNY_DB_APP'
+    return 'DataBase'
 
 @app.route('/get_info/<db_name>')
 def get_db_info(db_name):
@@ -176,7 +169,120 @@ def save_json_file_data(file_name):
         return f'file not saved {file_name}', 404
 
 
+@app.route('/get_orders_by_status/<db_name>/<status>', methods=['GET'])
+def special_get_orders_by_status(db_name, status):
+    db = uny_db_driver.uny_litebase(db_name)
+    data = db.get_all_tab_data_by_keys('orders_tab', 'status', status)
+
+    out = []
+    if len(data) > 0:
+        for id, client_id, order_id, input_date, output_date, status, name, sequence, \
+                end5, end3, amount, purification, lenght in data:
+
+            invoce_data = db.get_all_tab_data_by_keys('invoice_tab', 'id', order_id)
+
+            d = {}
+            d['#'] = id
+            d['status'] = status
+            d['input date'] = input_date
+            d['output date'] = output_date
+            d['client id'] = invoce_data[0][2]
+            d['order id'] = invoce_data[0][1]
+            d["5'-end"] = str(end5)
+            d["Sequence"] = str(sequence)
+            d["3'-end"] = str(end3)
+            d['Amount, oe'] = str(amount)
+            d['Purification'] = str(purification)
+            d['Lenght'] = str(lenght)
+            d['Name'] = str(name)
+            out.append(d)
+
+        return out, 200
+    else:
+
+        d = {}
+        d['#'] = 0
+        d['status'] = ''
+        d['input date'] = ''
+        d['output date'] = ''
+        d['client id'] = ''
+        d['order id'] = ''
+        d["5'-end"] = 'none'
+        d["Sequence"] = ''
+        d["3'-end"] = 'none'
+        d['Amount, oe'] = ''
+        d['Purification'] = ''
+        d['Lenght'] = ''
+        d['Name'] = ''
+        out.append(d)
+
+        return out, 200
+
+
+def get_counts(order_list):
+        d = {}
+        d['in queue'] = 0
+        d['synthesis'] = 0
+        d['purification'] = 0
+        d['formulation'] = 0
+        d['finished'] = 0
+        d['arhive'] = 0
+        d['total'] = 0
+
+        for row in order_list:
+            d['out date'] = row[4]
+            d[row[5]] += 1
+            d['total'] += 1
+        return d
+
+def is_all_finished(order_list):
+        ctrl = True
+        for row in order_list:
+            if row[5] not in ['finished', 'arhive']:
+                ctrl = False
+                break
+        return ctrl
+
+@app.route('/get_all_invoces/<db_name>', methods=['GET'])
+def special_get_all_invoces(db_name):
+    try:
+        db = uny_db_driver.uny_litebase(db_name)
+        data = db.get_all_tab_data('invoice_tab')
+
+        out = []
+        for row in data:
+            d = {}
+            orders_list = db.get_all_tab_data_by_keys('orders_tab', 'order_id', row[0])
+            counts = get_counts(orders_list)
+            if len(orders_list) > 0:
+                if is_all_finished(orders_list):
+                    d['#'] = row[0]
+                    d['invoce'] = row[1]
+                    d['client'] = row[2]
+                    d['input date'] = orders_list[0][3]
+                    d['status'] = 'complited'
+                else:
+                    d['#'] = row[0]
+                    d['invoce'] = row[1]
+                    d['client'] = row[2]
+                    d['input date'] = orders_list[0][3]
+                    d['status'] = 'in progress'
+
+                d['out date'] = counts['out date']
+                d['number'] = counts['total']
+                d['in queue%'] = round(counts['in queue'] * 100 / counts['total'])
+                d['synth%'] = round(counts['synthesis'] * 100 / counts['total'])
+                d['purif%'] = round(counts['purification'] * 100 / counts['total'])
+                d['formul%'] = round(counts['formulation'] * 100 / counts['total'])
+                d['fin%'] = round(counts['finished'] * 100 / counts['total'])
+                d['archived%'] = round(counts['arhive'] * 100 / counts['total'])
+
+                out.append(d)
+        return out, 200
+    except:
+        return [], 404
+
+
 
 if __name__ == '__main__':
-#    app.run(port=8881, debug=True)
     app.run(host='0.0.0.0', port=8012, debug=True)
