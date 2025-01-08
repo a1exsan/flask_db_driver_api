@@ -3,6 +3,7 @@ from flask import Flask, request
 from flask_cors import CORS
 import uny_db_driver
 import json
+import interval_jobs
 
 app = Flask(__name__)
 CORS(app)
@@ -285,4 +286,9 @@ def special_get_all_invoces(db_name):
 
 
 if __name__ == '__main__':
+
+    #job = interval_jobs.job_class(app)
+    #job.add_job_1()
+    #job.add_oligomap_status_monitor_job()
+
     app.run(host='0.0.0.0', port=8012, debug=True)

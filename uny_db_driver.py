@@ -225,8 +225,21 @@ def create_file_base():
 
     db.create_tables()
 
+def create_monitor_data_base():
+    db = uny_litebase('monitor_changes_1.db')
+
+    db.add_item('actual', 'job_id', 'VARCHAR(255)')
+    db.add_item('actual', 'code_info', 'VARCHAR(255)')
+    db.add_item('actual', 'date', 'VARCHAR(255)')
+    db.add_item('actual', 'time', 'VARCHAR(255)')
+
+    db.add_item('stack', 'job_id', 'VARCHAR(255)')
+
+    db.create_tables()
+
 
 if __name__ == '__main__':
     #create('test')
     show_all_tabs()
     #create_file_base()
+    #create_monitor_data_base()
