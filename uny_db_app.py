@@ -306,7 +306,7 @@ def special_get_remaining_stock(db_name, unicode):
     connection.commit()
     connection.close()
 
-    return input_count - output_count
+    return {'exist': input_count - output_count}, 200
 
 
 
