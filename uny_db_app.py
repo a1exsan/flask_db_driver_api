@@ -4,6 +4,7 @@ from flask_cors import CORS
 import uny_db_driver
 import json
 import interval_jobs
+import sqlite3
 
 app = Flask(__name__)
 CORS(app)
@@ -282,6 +283,30 @@ def special_get_all_invoces(db_name):
         return out, 200
     except:
         return [], 404
+
+@app.route('/get_remaining_stock/<db_name>/<unicode>', methods=['GET'])
+def special_get_remaining_stock(db_name, unicode):
+    connection = sqlite3.connect(db_name)
+    cursor = connection.cursor()
+
+    cursor.execute(f'SELECT id, amount FROM input_tab WHERE unicode = ?',
+                   [unicode])
+    results = cursor.fetchall()
+    input_count = 0
+    for row in results:
+        input_count += row[1]
+
+    cursor.execute(f'SELECT id, amount FROM output_tab WHERE unicode = ?',
+                   [unicode])
+    results = cursor.fetchall()
+    output_count = 0
+    for row in results:
+        output_count += row[1]
+
+    connection.commit()
+    connection.close()
+
+    return input_count - output_count
 
 
 
