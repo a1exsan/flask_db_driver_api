@@ -204,13 +204,6 @@ def test_run():
     for row in db.get_all_tab_data('second_tab'):
         print(row)
 
-def show_all_tabs():
-    db = uny_litebase('map_analytics_1.db')
-    print(db.get_table_col_names('lcms_tab'))
-    data = db.get_all_tab_data('lcms_tab')
-    for r in data:
-        print(r)
-
 def create_file_base():
     db = uny_litebase('map_analytics_1.db')
 
@@ -237,9 +230,64 @@ def create_monitor_data_base():
 
     db.create_tables()
 
+def remake_stock_db():
+    db = uny_litebase('stock_oligolab_4.db')
+
+    db.add_item('total_tab', 'pos_name', 'VARCHAR(255)')
+    db.add_item('total_tab', 'unicode', 'VARCHAR(255)')
+    db.add_item('total_tab', 'units', 'VARCHAR(255)')
+    db.add_item('total_tab', 'description', 'text')
+    db.add_item('total_tab', 'lower_limit', 'INTEGER')
+
+    db.add_item('input_tab', 'pos_name', 'VARCHAR(255)')
+    db.add_item('input_tab', 'unicode', 'VARCHAR(255)')
+    db.add_item('input_tab', 'amount', 'FLOAT')
+    db.add_item('input_tab', 'date', 'VARCHAR(255)')
+    db.add_item('input_tab', 'time', 'VARCHAR(255)')
+    db.add_item('input_tab', 'telegram_id', 'VARCHAR(255)')
+
+    db.add_item('output_tab', 'pos_name', 'VARCHAR(255)')
+    db.add_item('output_tab', 'unicode', 'VARCHAR(255)')
+    db.add_item('output_tab', 'amount', 'FLOAT')
+    db.add_item('output_tab', 'date', 'VARCHAR(255)')
+    db.add_item('output_tab', 'time', 'VARCHAR(255)')
+    db.add_item('output_tab', 'telegram_id', 'VARCHAR(255)')
+
+    db.add_item('users', 'name', 'VARCHAR(255)')
+    db.add_item('users', 'telegram_id', 'VARCHAR(255)')
+    db.add_item('users', 'status', 'VARCHAR(255)')
+
+    db.create_tables()
+
+def show_all_tabs():
+    db = uny_litebase('stock_oligolab_4.db')
+    print(db.get_table_col_names('input_tab'))
+    data = db.get_all_tab_data('input_tab')
+    for r in data:
+        print(r)
+
+def rewrite_stock_db():
+    db = uny_litebase('stock_oligolab_3.db')
+    db_dest = uny_litebase('stock_oligolab_4.db')
+
+    tab_name = 'output_tab'
+
+    tab = db.get_all_tab_data(tab_name)
+    for row in tab:
+        print(row)
+        d = row[4][:row[4].find(' ')]
+        t = row[4][row[4].find(' ') + 1:row[4].find('.')]
+        insert_list = [row[1], row[2], row[3], d, t, row[5]]
+        #insert_list = row[1:]
+        print(insert_list)
+        db_dest.insert_data(tab_name, insert_list)
+
+
 
 if __name__ == '__main__':
     #create('test')
     show_all_tabs()
     #create_file_base()
     #create_monitor_data_base()
+    #remake_stock_db()
+    #rewrite_stock_db()
