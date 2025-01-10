@@ -1,3 +1,4 @@
+import datetime
 import sqlite3
 import pandas as pd
 import json
@@ -231,7 +232,7 @@ def create_monitor_data_base():
     db.create_tables()
 
 def remake_stock_db():
-    db = uny_litebase('stock_oligolab_4.db')
+    db = uny_litebase('stock_oligolab_5.db')
 
     db.add_item('total_tab', 'pos_name', 'VARCHAR(255)')
     db.add_item('total_tab', 'unicode', 'VARCHAR(255)')
@@ -256,31 +257,37 @@ def remake_stock_db():
     db.add_item('users', 'name', 'VARCHAR(255)')
     db.add_item('users', 'telegram_id', 'VARCHAR(255)')
     db.add_item('users', 'status', 'VARCHAR(255)')
+    db.add_item('users', 'pin', 'VARCHAR(255)')
+    db.add_item('users', 'date', 'VARCHAR(255)')
 
     db.create_tables()
 
 def show_all_tabs():
-    db = uny_litebase('stock_oligolab_4.db')
-    print(db.get_table_col_names('input_tab'))
-    data = db.get_all_tab_data('input_tab')
+    db = uny_litebase('stock_oligolab_5.db')
+    print(db.get_table_col_names('users'))
+    data = db.get_all_tab_data('users')
     for r in data:
         print(r)
 
 def rewrite_stock_db():
-    db = uny_litebase('stock_oligolab_3.db')
-    db_dest = uny_litebase('stock_oligolab_4.db')
+    db = uny_litebase('stock_oligolab_4.db')
+    db_dest = uny_litebase('stock_oligolab_5.db')
 
-    tab_name = 'output_tab'
+    tab_name = ['total_tab', 'output_tab', 'input_tab', 'users']
 
-    tab = db.get_all_tab_data(tab_name)
-    for row in tab:
-        print(row)
-        d = row[4][:row[4].find(' ')]
-        t = row[4][row[4].find(' ') + 1:row[4].find('.')]
-        insert_list = [row[1], row[2], row[3], d, t, row[5]]
-        #insert_list = row[1:]
-        print(insert_list)
-        db_dest.insert_data(tab_name, insert_list)
+    for t_n in tab_name:
+        tab = db.get_all_tab_data(t_n)
+        for row in tab:
+            #print(row)
+            #d = row[4][:row[4].find(' ')]
+            #t = row[4][row[4].find(' ') + 1:row[4].find('.')]
+            #insert_list = [row[1], row[2], row[3], d, t, row[5]]
+            insert_list = list(row[1:])
+            if t_n == 'users':
+                insert_list.append('5511')
+                insert_list.append(datetime.datetime.now().date().strftime('%d.%m.%Y'))
+            print(insert_list)
+            db_dest.insert_data(t_n, insert_list)
 
 
 

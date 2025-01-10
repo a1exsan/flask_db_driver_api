@@ -6,14 +6,40 @@ import json
 import interval_jobs
 import sqlite3
 
+from flask_httpauth import HTTPBasicAuth
+from flask_httpauth import HTTPTokenAuth
+from werkzeug.security import generate_password_hash, check_password_hash
+
+
 app = Flask(__name__)
 CORS(app)
 
-@app.route('/example', methods=['GET', 'POST'])
+#auth = HTTPBasicAuth()
+auth = HTTPTokenAuth(scheme='Pincode')
+pin_auth = interval_jobs.pincode_manager()
+tokens = pin_auth.get_tokens()
+
+#@auth.verify_password
+#def verify_pwd(username, password):
+#    if (username in users and
+#        check_password_hash(users.get(username), password)):
+#        return username
+
+@auth.verify_token
+def verify_token(token):
+    if token in tokens:
+        return tokens[token]
+
+@app.route('/', methods=['GET', 'POST'])
+@auth.login_required
 def home():
-    return 'DataBase'
+    #print(request.authorization)
+    #print(request.headers.get('X-Api-Key'))
+    #print(auth.get_auth())
+    return f"DataBase {auth.current_user()}"
 
 @app.route('/get_info/<db_name>')
+@auth.login_required
 def get_db_info(db_name):
     db = uny_db_driver.uny_litebase(db_name)
     tabs = db.get_all_tables_name()
@@ -29,6 +55,7 @@ def get_db_info(db_name):
     return 'Server error', 404
 
 @app.route('/get_info/<db_name>/<tab_name>')
+@auth.login_required
 def get_db_tab_info(db_name, tab_name):
     db = uny_db_driver.uny_litebase(db_name)
     cols = db.get_table_col_names(tab_name)
@@ -37,6 +64,7 @@ def get_db_tab_info(db_name, tab_name):
     return 'Server error', 404
 
 @app.route('/get_all_tab_data/<db_name>/<tab_name>')
+@auth.login_required
 def get_all_tab_data(db_name, tab_name):
     db = uny_db_driver.uny_litebase(db_name)
     data = db.get_all_tab_data(tab_name)
@@ -45,6 +73,7 @@ def get_all_tab_data(db_name, tab_name):
     return 'Server error', 404
 
 @app.route('/get_keys_data/<db_name>/<tab_name>/<item>/<value>')
+@auth.login_required
 def get_keys_data(db_name, tab_name, item, value):
     db = uny_db_driver.uny_litebase(db_name)
     data = db.get_all_tab_data_by_keys(tab_name, item, value)
@@ -53,6 +82,7 @@ def get_keys_data(db_name, tab_name, item, value):
     return 'Server error', 404
 
 @app.route('/insert_data/<db_name>/<tab_name>', methods=['POST'])
+@auth.login_required
 def insert_data(db_name, tab_name):
 
     #r = requests.post('http://127.0.0.1:8881/insert_data/test_1.db/main_tab',
@@ -66,6 +96,7 @@ def insert_data(db_name, tab_name):
     return 'Server error', 404
 
 @app.route('/update_data/<db_name>/<tab_name>/<record_id>', methods=['PUT'])
+@auth.login_required
 def update_data(db_name, tab_name, record_id):
 
     #r = requests.put('http://127.0.0.1:8881/update_data/test_1.db/main_tab/10',
@@ -80,6 +111,7 @@ def update_data(db_name, tab_name, record_id):
     return 'Server error', 404
 
 @app.route('/delete_data/<db_name>/<tab_name>/<record_id>', methods=['DELETE'])
+@auth.login_required
 def delete_data(db_name, tab_name, record_id):
 
     #r = requests.put('http://127.0.0.1:8881/update_data/test_1.db/main_tab/10',
@@ -92,6 +124,7 @@ def delete_data(db_name, tab_name, record_id):
     return 'Server error', 404
 
 @app.route('/insert_file_data/<db_name>/<tab_name>', methods=['POST'])
+@auth.login_required
 def insert_file_data(db_name, tab_name):
 
     #r = requests.post('http://127.0.0.1:8881/insert_file_data/map_analytics_1.db/lcms_tab',
@@ -112,6 +145,7 @@ def insert_file_data(db_name, tab_name):
     return 'Server error', 404
 
 @app.route('/get_file_data/<db_name>/<tab_name>/<id>/<order_id>/<pos>', methods=['GET'])
+@auth.login_required
 def get_file_data(db_name, tab_name, id, order_id, pos):
 
     #r = requests.post('http://127.0.0.1:8881/insert_file_data/map_analytics_1.db/lcms_tab',
@@ -139,6 +173,7 @@ def get_file_data(db_name, tab_name, id, order_id, pos):
     return 'Server error', 404
 
 @app.route('/update_file_data/<db_name>/<tab_name>/<record_id>', methods=['PUT'])
+@auth.login_required
 def update_file_data(db_name, tab_name, record_id):
 
     #r = requests.put('http://127.0.0.1:8881/update_data/test_1.db/main_tab/10',
@@ -153,6 +188,7 @@ def update_file_data(db_name, tab_name, record_id):
     return 'Server error', 404
 
 @app.route('/get_lcms_json_data/<file_name>', methods=['GET'])
+@auth.login_required
 def get_json_file_data(file_name):
     try:
         with open(f'lcms_files/{file_name}', 'r') as f:
@@ -162,6 +198,7 @@ def get_json_file_data(file_name):
         return 'No file', 200
 
 @app.route('/post_lcms_json_data/<file_name>', methods=['POST'])
+@auth.login_required
 def save_json_file_data(file_name):
     try:
         with open(f'lcms_files/{file_name}', 'w') as f:
@@ -172,6 +209,7 @@ def save_json_file_data(file_name):
 
 
 @app.route('/get_orders_by_status/<db_name>/<status>', methods=['GET'])
+@auth.login_required
 def special_get_orders_by_status(db_name, status):
     db = uny_db_driver.uny_litebase(db_name)
     data = db.get_all_tab_data_by_keys('orders_tab', 'status', status)
@@ -246,6 +284,7 @@ def is_all_finished(order_list):
         return ctrl
 
 @app.route('/get_all_invoces/<db_name>', methods=['GET'])
+@auth.login_required
 def special_get_all_invoces(db_name):
     try:
         db = uny_db_driver.uny_litebase(db_name)
@@ -285,6 +324,7 @@ def special_get_all_invoces(db_name):
         return [], 404
 
 @app.route('/get_remaining_stock/<db_name>/<unicode>', methods=['GET'])
+@auth.login_required
 def special_get_remaining_stock(db_name, unicode):
     connection = sqlite3.connect(db_name)
     cursor = connection.cursor()

@@ -3,9 +3,46 @@ import uny_db_driver
 import pandas as pd
 import json
 from datetime import datetime
+import random
 
 import telebot
 import oligoSYN_lab_token
+
+class pincode_manager():
+    def __init__(self):
+        self.db_name = 'stock_oligolab_5.db'
+        self.limit_days = 1
+
+    def generate_pincodes(self):
+        db = uny_db_driver.uny_litebase(self.db_name)
+        data = db.get_all_tab_data('users')
+        for u in data:
+            pin = str(random.randint(1000, 10000))
+            d = datetime.now().date().strftime('%d.%m.%Y')
+            db.update_data('users', u[0], ['pin', 'date'], [pin, d])
+            #print(u[0], pin)
+
+    def check_pincodes(self):
+        db = uny_db_driver.uny_litebase(self.db_name)
+        data = db.get_all_tab_data('users')
+        last_date = datetime.strptime(data[0][5], '%d.%m.%Y')
+        now_date = datetime.now()
+
+        if (now_date - last_date).days >= self.limit_days:
+            #print((now_date - last_date).days)
+            self.generate_pincodes()
+
+    def get_tokens(self):
+
+        self.check_pincodes()
+
+        db = uny_db_driver.uny_litebase(self.db_name)
+        data = db.get_all_tab_data('users')
+        tokens = {}
+        for u in data:
+            tokens[u[4]] = u[1]
+        return tokens
+
 
 class data_changes_monitor():
     def __init__(self):
@@ -114,3 +151,11 @@ class job_class():
     def add_oligomap_status_monitor_job(self):
         self.scheduler.add_job(id='oligomap_status_monitor_1',
                                func=self.monitor.monitor_oligomap_status_task, trigger='interval', seconds=20)
+
+
+def test1():
+    pins = pincode_manager()
+    print(pins.get_tokens())
+
+if __name__ == '__main__':
+    test1()

@@ -3,3 +3,4 @@ flask
 flask-cors
 Flask-APScheduler
 pyTelegramBotAPI
+Flask-HTTPAuth
