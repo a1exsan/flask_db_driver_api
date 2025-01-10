@@ -4,6 +4,7 @@ from telebot import types
 import qrcode_work
 import stock_db_driver as db_manager
 import solutions_db_driver as sol_db_manager
+import interval_jobs
 
 
 class users():
@@ -13,7 +14,7 @@ class users():
         self.sol_db_name = sol_db_name
         self.users_db = dict()
         self.users_sol_db = dict()
-        self.current_db = 'stock_oligolab_3'
+        self.current_db = 'stock_oligolab_5'
         self.load_users()
 
     def load_users(self):
@@ -32,7 +33,7 @@ class users():
 
 
 bot = telebot.TeleBot(token.TOKEN, parse_mode=None)
-users_ = users('stock_oligolab_3.db', 'solutions_oligolab_1.db')
+users_ = users('stock_oligolab_5.db', 'solutions_oligolab_1.db')
 
 def send_text_message(text, user_id):
     bot.send_message(user_id, text)
@@ -43,8 +44,9 @@ def create_menu_in_out(message):
     item2 = types.KeyboardButton("Приход")
     item3 = types.KeyboardButton("Остаток")
     item4 = types.KeyboardButton("Растворы")
+    item5 = types.KeyboardButton("PIN")
     markup.add(item1, item2, item3)
-    markup.add(item4)
+    markup.add(item4, item5)
     bot.send_message(message.chat.id, 'Выберите что вам надо', reply_markup=markup)
 
 def create_solutions_menu(message):
@@ -95,7 +97,7 @@ def handle_photo(message):
         try:
             value = qr.read()
             bot.reply_to(message, str(value))
-            if users_.current_db == 'stock_oligolab_3':
+            if users_.current_db == 'stock_oligolab_5':
                 users_.users_db[c_u].current_unicode = str(value)
             elif users_.current_db == 'solutions_oligolab_1':
                 users_.users_sol_db[c_u].current_unicode = str(value)
@@ -115,7 +117,7 @@ def send_menu_in_out(message):
 
         elif '.' in message.text:
             #print('float', message.text)
-            if users_.current_db == 'stock_oligolab_3':
+            if users_.current_db == 'stock_oligolab_5':
                 users_.users_db[c_u].current_amount = float(message.text.replace(',', '.'))
                 create_menu_yes_no(message)
             elif users_.current_db == 'solutions_oligolab_1':
@@ -124,7 +126,7 @@ def send_menu_in_out(message):
 
         elif message.text == 'Да':
 
-            if users_.current_db == 'stock_oligolab_3':
+            if users_.current_db == 'stock_oligolab_5':
                 out = users_.users_db[c_u].add_goods(users_.users_db[c_u].current_amount)
                 bot.reply_to(message, out)
                 create_menu_in_out(message)
@@ -135,7 +137,7 @@ def send_menu_in_out(message):
 
         elif message.text == 'Нет':
 
-            if users_.current_db == 'stock_oligolab_3':
+            if users_.current_db == 'stock_oligolab_5':
                 create_menu_in_out(message)
             elif users_.current_db == 'solutions_oligolab_1':
                 create_solutions_menu(message)
@@ -148,7 +150,7 @@ def send_menu_in_out(message):
             users_.current_db = 'solutions_oligolab_1'
             create_solutions_menu(message)
         elif message.text == 'sСклад':
-            users_.current_db = 'stock_oligolab_3'
+            users_.current_db = 'stock_oligolab_5'
             create_menu_in_out(message)
         elif message.text == 'sПриготовить':
             text, compos, vols = users_.users_sol_db[c_u].get_sol_composition(users_.users_sol_db[c_u].current_unicode)
@@ -168,7 +170,10 @@ def send_menu_in_out(message):
             bot.reply_to(message, f' введите возможный объем раствора: '
                                   f'{users_.users_sol_db[c_u].get_sol_name(users_.users_sol_db[c_u].current_unicode)}: '
                                   f'{str(vols)}')
-
+        elif message.text == 'PIN':
+            pin_manager = interval_jobs.pincode_manager()
+            pins = pin_manager.get_pins()
+            bot.reply_to(message, f'Ваш код: {pins[c_u]}')
 
 
 

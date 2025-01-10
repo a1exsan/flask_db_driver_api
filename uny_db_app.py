@@ -353,6 +353,7 @@ def special_get_remaining_stock(db_name, unicode):
 if __name__ == '__main__':
 
     #job = interval_jobs.job_class(app)
+    #job.tg_bot_add_job()
     #job.add_job_1()
     #job.add_oligomap_status_monitor_job()
 

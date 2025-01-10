@@ -249,7 +249,9 @@ class db_admin():
                                            pos_name,
                                            self.current_unicode,
                                            amount,
-                                           datetime.now(),
+                                           #datetime.now(),
+                                           datetime.now().date().strftime('%d.%m.%Y'),
+                                           datetime.now().time().strftime('%H:%M:%S'),
                                            self.user_id)
                 s = (f'{self.user_name}; {self.current_operation}; {pos_name}; {amount} {units}; '
                      f'остаток {rr - amount}')
@@ -261,7 +263,8 @@ class db_admin():
                                        pos_name,
                                        self.current_unicode,
                                        amount,
-                                       datetime.now(),
+                                       datetime.now().date().strftime('%d.%m.%Y'),
+                                       datetime.now().time().strftime('%H:%M:%S'),
                                        self.user_id)
             rr = self.get_remaining_stock(unicode=self.current_unicode)
             s = (f'{self.user_name}; {self.current_operation}; {pos_name}; {amount} {units}; '

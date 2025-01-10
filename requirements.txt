@@ -4,3 +4,5 @@ flask-cors
 Flask-APScheduler
 pyTelegramBotAPI
 Flask-HTTPAuth
+qrcode
+qreader

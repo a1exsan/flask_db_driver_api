@@ -7,6 +7,7 @@ import random
 
 import telebot
 import oligoSYN_lab_token
+#import tg_bot
 
 class pincode_manager():
     def __init__(self):
@@ -42,6 +43,15 @@ class pincode_manager():
         for u in data:
             tokens[u[4]] = u[1]
         return tokens
+
+    def get_pins(self):
+        self.check_pincodes()
+        db = uny_db_driver.uny_litebase(self.db_name)
+        data = db.get_all_tab_data('users')
+        pins = {}
+        for u in data:
+            pins[u[2]] = u[4]
+        return pins
 
 
 class data_changes_monitor():
@@ -136,7 +146,6 @@ class job_class():
         self.scheduler.init_app(app)
         self.scheduler.api_enabled = True
         self.scheduler.start()
-
         self.monitor = data_changes_monitor()
 
     def interval_task(self):
@@ -151,6 +160,13 @@ class job_class():
     def add_oligomap_status_monitor_job(self):
         self.scheduler.add_job(id='oligomap_status_monitor_1',
                                func=self.monitor.monitor_oligomap_status_task, trigger='interval', seconds=20)
+    def tg_bot_add_job(self):
+        self.scheduler.add_job(id='run_telegram_bot_1',
+                               func=self.run_bot, trigger='interval', seconds=60*1)
+
+    def run_bot(self):
+        pass
+        #tg_bot.bot.polling(none_stop=True)
 
 
 def test1():
