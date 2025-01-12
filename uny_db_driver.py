@@ -3,6 +3,23 @@ import sqlite3
 import pandas as pd
 import json
 
+class history_agent():
+    def __init__(self, request, auth):
+        self.db_name = 'request_history_1.db'
+        self.request =request
+        self.auth = auth
+        self.write_data()
+
+    def write_data(self):
+        date = datetime.datetime.now().date().strftime("%d.%m.%Y")
+        time = datetime.datetime.now().time().strftime("%H:%M:%S")
+        user_name = self.auth.current_user()
+
+        db = uny_litebase(self.db_name)
+        db.insert_data('main_tab', [user_name, date, time, self.request.url, self.request.remote_addr])
+
+
+
 class uny_litebase():
     def __init__(self, base_name):
         self.base_name = base_name
@@ -262,12 +279,36 @@ def remake_stock_db():
 
     db.create_tables()
 
+def create_request_hist_tab():
+    db = uny_litebase('request_history_1.db')
+
+    db.add_item('main_tab', 'user_name', 'VARCHAR(255)')
+    #db.add_item('main_tab', 'user_id', 'VARCHAR(255)')
+    db.add_item('main_tab', 'date', 'VARCHAR(255)')
+    db.add_item('main_tab', 'time', 'VARCHAR(255)')
+    db.add_item('main_tab', 'url', 'text')
+    db.add_item('main_tab', 'remote_addr', 'VARCHAR(255)')
+
+    db.create_tables()
+
 def show_all_tabs():
     db = uny_litebase('stock_oligolab_5.db')
     print(db.get_table_col_names('users'))
     data = db.get_all_tab_data('users')
     for r in data:
         print(r)
+
+    db = uny_litebase('request_history_1.db')
+    print(db.get_table_col_names('main_tab'))
+    data = db.get_all_tab_data('main_tab')
+    for r in data:
+        print(r)
+
+    #db = uny_litebase('stock_oligolab_5.db')
+    #print(db.get_table_col_names('output_tab'))
+    #data = db.get_all_tab_data('output_tab')
+    #for r in data:
+    #    print(r)
 
 def rewrite_stock_db():
     db = uny_litebase('stock_oligolab_4.db')
@@ -298,3 +339,4 @@ if __name__ == '__main__':
     #create_monitor_data_base()
     #remake_stock_db()
     #rewrite_stock_db()
+    #create_request_hist_tab()

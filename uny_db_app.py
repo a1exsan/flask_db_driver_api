@@ -31,16 +31,20 @@ def verify_token(token):
         return tokens[token]
 
 @app.route('/', methods=['GET', 'POST'])
-@auth.login_required
+#@auth.login_required
 def home():
+    print(request.date)
+    print(request.data)
     #print(request.authorization)
     #print(request.headers.get('X-Api-Key'))
     #print(auth.get_auth())
     return f"DataBase {auth.current_user()}"
 
 @app.route('/get_info/<db_name>')
-@auth.login_required
+#@auth.login_required
 def get_db_info(db_name):
+    #print(request.remote_addr)
+    #print(auth.current_user())
     db = uny_db_driver.uny_litebase(db_name)
     tabs = db.get_all_tables_name()
     tabs = [i[0] for i in tabs]
@@ -57,6 +61,8 @@ def get_db_info(db_name):
 @app.route('/get_info/<db_name>/<tab_name>')
 @auth.login_required
 def get_db_tab_info(db_name, tab_name):
+    uny_db_driver.history_agent(request, auth)
+
     db = uny_db_driver.uny_litebase(db_name)
     cols = db.get_table_col_names(tab_name)
     if cols != None:
@@ -66,6 +72,8 @@ def get_db_tab_info(db_name, tab_name):
 @app.route('/get_all_tab_data/<db_name>/<tab_name>')
 @auth.login_required
 def get_all_tab_data(db_name, tab_name):
+    uny_db_driver.history_agent(request, auth)
+
     db = uny_db_driver.uny_litebase(db_name)
     data = db.get_all_tab_data(tab_name)
     if data != None:
@@ -75,6 +83,8 @@ def get_all_tab_data(db_name, tab_name):
 @app.route('/get_keys_data/<db_name>/<tab_name>/<item>/<value>')
 @auth.login_required
 def get_keys_data(db_name, tab_name, item, value):
+    uny_db_driver.history_agent(request, auth)
+
     db = uny_db_driver.uny_litebase(db_name)
     data = db.get_all_tab_data_by_keys(tab_name, item, value)
     if data != None:
@@ -84,7 +94,7 @@ def get_keys_data(db_name, tab_name, item, value):
 @app.route('/insert_data/<db_name>/<tab_name>', methods=['POST'])
 @auth.login_required
 def insert_data(db_name, tab_name):
-
+    uny_db_driver.history_agent(request, auth)
     #r = requests.post('http://127.0.0.1:8881/insert_data/test_1.db/main_tab',
     # json=json.dumps(['test_name','test_content']))
 
@@ -98,7 +108,7 @@ def insert_data(db_name, tab_name):
 @app.route('/update_data/<db_name>/<tab_name>/<record_id>', methods=['PUT'])
 @auth.login_required
 def update_data(db_name, tab_name, record_id):
-
+    uny_db_driver.history_agent(request, auth)
     #r = requests.put('http://127.0.0.1:8881/update_data/test_1.db/main_tab/10',
     # json=json.dumps({'name_list':['name', 'text'],'value_list':['test_name','CONTENT111']}))
 
@@ -113,7 +123,7 @@ def update_data(db_name, tab_name, record_id):
 @app.route('/delete_data/<db_name>/<tab_name>/<record_id>', methods=['DELETE'])
 @auth.login_required
 def delete_data(db_name, tab_name, record_id):
-
+    uny_db_driver.history_agent(request, auth)
     #r = requests.put('http://127.0.0.1:8881/update_data/test_1.db/main_tab/10',
     # json=json.dumps({'name_list':['name', 'text'],'value_list':['test_name','CONTENT111']}))
 
@@ -126,7 +136,7 @@ def delete_data(db_name, tab_name, record_id):
 @app.route('/insert_file_data/<db_name>/<tab_name>', methods=['POST'])
 @auth.login_required
 def insert_file_data(db_name, tab_name):
-
+    uny_db_driver.history_agent(request, auth)
     #r = requests.post('http://127.0.0.1:8881/insert_file_data/map_analytics_1.db/lcms_tab',
     # json=json.dumps({'filename': 'test_file.txt', 'content': 'hWBCQUWEBC', 'to_base': [1, 2, 'A1', 'test_file.txt']}))
 
@@ -147,7 +157,7 @@ def insert_file_data(db_name, tab_name):
 @app.route('/get_file_data/<db_name>/<tab_name>/<id>/<order_id>/<pos>', methods=['GET'])
 @auth.login_required
 def get_file_data(db_name, tab_name, id, order_id, pos):
-
+    uny_db_driver.history_agent(request, auth)
     #r = requests.post('http://127.0.0.1:8881/insert_file_data/map_analytics_1.db/lcms_tab',
     # json=json.dumps({'filename': 'test_file.txt', 'content': 'hWBCQUWEBC', 'to_base': [1, 2, 'A1', 'test_file.txt']}))
 
@@ -175,7 +185,7 @@ def get_file_data(db_name, tab_name, id, order_id, pos):
 @app.route('/update_file_data/<db_name>/<tab_name>/<record_id>', methods=['PUT'])
 @auth.login_required
 def update_file_data(db_name, tab_name, record_id):
-
+    uny_db_driver.history_agent(request, auth)
     #r = requests.put('http://127.0.0.1:8881/update_data/test_1.db/main_tab/10',
     # json=json.dumps({'name_list':['name', 'text'],'value_list':['test_name','CONTENT111']}))
 
@@ -190,6 +200,7 @@ def update_file_data(db_name, tab_name, record_id):
 @app.route('/get_lcms_json_data/<file_name>', methods=['GET'])
 @auth.login_required
 def get_json_file_data(file_name):
+    uny_db_driver.history_agent(request, auth)
     try:
         with open(f'lcms_files/{file_name}', 'r') as f:
             data = json.load(f)
@@ -200,6 +211,7 @@ def get_json_file_data(file_name):
 @app.route('/post_lcms_json_data/<file_name>', methods=['POST'])
 @auth.login_required
 def save_json_file_data(file_name):
+    uny_db_driver.history_agent(request, auth)
     try:
         with open(f'lcms_files/{file_name}', 'w') as f:
             f.write(request.json)
@@ -211,6 +223,7 @@ def save_json_file_data(file_name):
 @app.route('/get_orders_by_status/<db_name>/<status>', methods=['GET'])
 @auth.login_required
 def special_get_orders_by_status(db_name, status):
+    uny_db_driver.history_agent(request, auth)
     db = uny_db_driver.uny_litebase(db_name)
     data = db.get_all_tab_data_by_keys('orders_tab', 'status', status)
 
@@ -286,6 +299,7 @@ def is_all_finished(order_list):
 @app.route('/get_all_invoces/<db_name>', methods=['GET'])
 @auth.login_required
 def special_get_all_invoces(db_name):
+    uny_db_driver.history_agent(request, auth)
     try:
         db = uny_db_driver.uny_litebase(db_name)
         data = db.get_all_tab_data('invoice_tab')
@@ -326,6 +340,7 @@ def special_get_all_invoces(db_name):
 @app.route('/get_remaining_stock/<db_name>/<unicode>', methods=['GET'])
 @auth.login_required
 def special_get_remaining_stock(db_name, unicode):
+    #uny_db_driver.history_agent(request, auth)
     connection = sqlite3.connect(db_name)
     cursor = connection.cursor()
 
