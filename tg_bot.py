@@ -66,6 +66,23 @@ def create_menu_yes_no(message):
     markup.add(item2)
     bot.send_message(message.chat.id, 'Подтвердить операцию?', reply_markup=markup)
 
+@bot.message_handler(commands=['dumpdb'])
+def dump_db(message):
+    if message.chat.id == 1848570232:
+        bot.reply_to(message, 'dumping')
+        filename_list = [
+            'asm2000_map_1.db',
+            'request_history_1.db',
+            'stock_oligolab_5.db',
+            'scheduler_oligolab_2.db',
+            'map_analytics_1.db'
+        ]
+        for filename in filename_list:
+            print(filename)
+            with open(filename, 'rb') as f:
+                doc = f.read()
+            bot.send_document(message.chat.id, document=doc, caption=filename)
+
 @bot.message_handler(commands=['get_id'])
 def get_id(message):
     print(message.from_user.id)
@@ -74,7 +91,7 @@ def get_id(message):
 
 @bot.message_handler(commands=['start', 'help'])
 def send_welcome(message):
-    bot.reply_to(message, "Howdy, how are you doing?")
+    bot.reply_to(message, "How are you doing?")
     create_menu_in_out(message)
 
 @bot.message_handler(content_types=['photo'])

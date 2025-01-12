@@ -9,6 +9,7 @@ import sqlite3
 from flask_httpauth import HTTPBasicAuth
 from flask_httpauth import HTTPTokenAuth
 from werkzeug.security import generate_password_hash, check_password_hash
+import os
 
 
 app = Flask(__name__)
@@ -363,13 +364,14 @@ def special_get_remaining_stock(db_name, unicode):
 
     return {'exist': input_count - output_count}, 200
 
-
-
 if __name__ == '__main__':
 
-    #job = interval_jobs.job_class(app)
-    #job.tg_bot_add_job()
+    job = interval_jobs.job_class(app)
+    job.tg_bot_add_job()
+
     #job.add_job_1()
     #job.add_oligomap_status_monitor_job()
+
+    #os.system('python tg_bot.py')
 
     app.run(host='0.0.0.0', port=8012, debug=True)

@@ -8,6 +8,7 @@ import random
 import telebot
 import oligoSYN_lab_token
 #import tg_bot
+import subprocess
 
 class pincode_manager():
     def __init__(self):
@@ -148,6 +149,8 @@ class job_class():
         self.scheduler.start()
         self.monitor = data_changes_monitor()
 
+        self.telegram_bot_proc = subprocess.Popen(['python', 'tg_bot.py'])
+
     def interval_task(self):
         print('Hello APScheduler')
 
@@ -165,8 +168,10 @@ class job_class():
                                func=self.run_bot, trigger='interval', seconds=60*1)
 
     def run_bot(self):
-        pass
-        #tg_bot.bot.polling(none_stop=True)
+        print('Check Telegram Bot')
+        if self.telegram_bot_proc.poll() != None:
+            print('RE_RUN Telegram Bot')
+            self.telegram_bot_proc = subprocess.Popen(['python', 'tg_bot.py'])
 
 
 def test1():
