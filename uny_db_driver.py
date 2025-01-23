@@ -6,7 +6,7 @@ import json
 class history_agent():
     def __init__(self, request, auth):
         self.db_name = 'request_history_1.db'
-        self.db_data_name = 'oligomap_history_1.db'
+        self.db_data_name = 'oligomap_history_2.db'
         self.request = request
         self.auth = auth
         self.write_data()
@@ -25,7 +25,7 @@ class history_agent():
         user_name = self.auth.current_user()
 
         db = uny_litebase(self.db_data_name)
-        db.insert_data('main_tab', [user_name, date, time, self.request.json])
+        db.insert_data('main_tab', [user_name, date, time, self.request.url, self.request.json])
 
 
 
@@ -301,12 +301,12 @@ def create_request_hist_tab():
     db.create_tables()
 
 def create_omap_history_table():
-    db = uny_litebase('oligomap_history_1.db')
+    db = uny_litebase('oligomap_history_2.db')
 
     db.add_item('main_tab', 'user_name', 'VARCHAR(255)')
-    # db.add_item('main_tab', 'user_id', 'VARCHAR(255)')
     db.add_item('main_tab', 'date', 'VARCHAR(255)')
     db.add_item('main_tab', 'time', 'VARCHAR(255)')
+    db.add_item('main_tab', 'url', 'text')
     db.add_item('main_tab', 'omap_json', 'text')
 
     db.create_tables()
@@ -319,7 +319,7 @@ def show_all_tabs():
     for r in data:
         print(r)
 
-    db = uny_litebase('request_history_1.db')
+    db = uny_litebase('oligomap_history_2.db')
     print(db.get_table_col_names('main_tab'))
     data = db.get_all_tab_data('main_tab')
     for r in data:
