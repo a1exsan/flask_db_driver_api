@@ -95,7 +95,8 @@ def get_keys_data(db_name, tab_name, item, value):
 @app.route('/insert_data/<db_name>/<tab_name>', methods=['POST'])
 @auth.login_required
 def insert_data(db_name, tab_name):
-    uny_db_driver.history_agent(request, auth)
+    hist = uny_db_driver.history_agent(request, auth)
+    hist.write_oligomap_data()
     #r = requests.post('http://127.0.0.1:8881/insert_data/test_1.db/main_tab',
     # json=json.dumps(['test_name','test_content']))
 
@@ -109,7 +110,8 @@ def insert_data(db_name, tab_name):
 @app.route('/update_data/<db_name>/<tab_name>/<record_id>', methods=['PUT'])
 @auth.login_required
 def update_data(db_name, tab_name, record_id):
-    uny_db_driver.history_agent(request, auth)
+    hist = uny_db_driver.history_agent(request, auth)
+    hist.write_oligomap_data()
     #r = requests.put('http://127.0.0.1:8881/update_data/test_1.db/main_tab/10',
     # json=json.dumps({'name_list':['name', 'text'],'value_list':['test_name','CONTENT111']}))
 

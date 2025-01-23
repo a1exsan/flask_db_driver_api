@@ -6,7 +6,8 @@ import json
 class history_agent():
     def __init__(self, request, auth):
         self.db_name = 'request_history_1.db'
-        self.request =request
+        self.db_data_name = 'oligomap_history_1.db'
+        self.request = request
         self.auth = auth
         self.write_data()
 
@@ -17,6 +18,14 @@ class history_agent():
 
         db = uny_litebase(self.db_name)
         db.insert_data('main_tab', [user_name, date, time, self.request.url, self.request.remote_addr])
+
+    def write_oligomap_data(self):
+        date = datetime.datetime.now().date().strftime("%d.%m.%Y")
+        time = datetime.datetime.now().time().strftime("%H:%M:%S")
+        user_name = self.auth.current_user()
+
+        db = uny_litebase(self.db_data_name)
+        db.insert_data('main_tab', [user_name, date, time, self.request.json])
 
 
 
@@ -291,6 +300,18 @@ def create_request_hist_tab():
 
     db.create_tables()
 
+def create_omap_history_table():
+    db = uny_litebase('oligomap_history_1.db')
+
+    db.add_item('main_tab', 'user_name', 'VARCHAR(255)')
+    # db.add_item('main_tab', 'user_id', 'VARCHAR(255)')
+    db.add_item('main_tab', 'date', 'VARCHAR(255)')
+    db.add_item('main_tab', 'time', 'VARCHAR(255)')
+    db.add_item('main_tab', 'omap_json', 'text')
+
+    db.create_tables()
+
+
 def show_all_tabs():
     db = uny_litebase('stock_oligolab_5.db')
     print(db.get_table_col_names('users'))
@@ -340,3 +361,4 @@ if __name__ == '__main__':
     #remake_stock_db()
     #rewrite_stock_db()
     #create_request_hist_tab()
+    #create_omap_history_table()
