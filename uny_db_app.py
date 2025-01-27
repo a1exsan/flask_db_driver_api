@@ -328,11 +328,11 @@ def special_get_all_invoces(db_name):
 
                 d['out date'] = counts['out date']
                 d['number'] = counts['total']
-                d['in queue%'] = round(counts['in queue'] * 100 / counts['total'])
-                d['synth%'] = round(counts['synthesis'] * 100 / counts['total'])
-                d['purif%'] = round(counts['purification'] * 100 / counts['total'])
-                d['formul%'] = round(counts['formulation'] * 100 / counts['total'])
-                d['fin%'] = round(counts['finished'] * 100 / counts['total'])
+                d['in queue%'] = f"{counts['in queue']}" #round(counts['in queue'] * 100 / counts['total'])
+                d['synth%'] = f"{counts['synthesis']}" #round(counts['synthesis'] * 100 / counts['total'])
+                d['purif%'] = f"{counts['purification']}" #round(counts['purification'] * 100 / counts['total'])
+                d['formul%'] = f"{counts['formulation']}" #round(counts['formulation'] * 100 / counts['total'])
+                d['fin%'] = f"{counts['finished']} / {counts['total']}" #round(counts['finished'] * 100 / counts['total'])
                 d['archived%'] = round(counts['arhive'] * 100 / counts['total'])
 
                 out.append(d)
