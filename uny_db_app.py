@@ -343,6 +343,7 @@ def special_get_all_invoces(db_name):
 @app.route('/get_all_invoces_by_orders/<db_name>', methods=['GET'])
 @auth.login_required
 def special_get_all_invoces_by_order(db_name):
+    #add new func
     uny_db_driver.history_agent(request, auth)
     order_list = json.loads(request.json)
     db = uny_db_driver.uny_litebase(db_name)
