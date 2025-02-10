@@ -340,6 +340,20 @@ def special_get_all_invoces(db_name):
     except:
         return [], 404
 
+@app.route('/get_all_invoces_by_orders/<db_name>', methods=['GET'])
+@auth.login_required
+def special_get_all_invoces_by_order(db_name):
+    uny_db_driver.history_agent(request, auth)
+    order_list = json.loads(request.json)
+    db = uny_db_driver.uny_litebase(db_name)
+    out_list = []
+    for order_id in order_list:
+        out_data = db.get_all_tab_data_by_keys('orders_tab', 'id', order_id)
+        client_data = db.get_all_tab_data_by_keys('invoice_tab', 'id', out_data[0][1])
+        out_list.append({'client': client_data[0][2], 'invoce': client_data[0][1]})
+    return out_list, 200
+
+
 @app.route('/get_remaining_stock/<db_name>/<unicode>', methods=['GET'])
 @auth.login_required
 def special_get_remaining_stock(db_name, unicode):
@@ -368,8 +382,8 @@ def special_get_remaining_stock(db_name, unicode):
 
 if __name__ == '__main__':
 
-    job = interval_jobs.job_class(app)
-    job.tg_bot_add_job()
+    #job = interval_jobs.job_class(app)
+    #job.tg_bot_add_job()
 
     #job.add_job_1()
     #job.add_oligomap_status_monitor_job()

@@ -319,11 +319,11 @@ def show_all_tabs():
     for r in data:
         print(r)
 
-    db = uny_litebase('oligomap_history_2.db')
-    print(db.get_table_col_names('main_tab'))
-    data = db.get_all_tab_data('main_tab')
-    for r in data:
-        print(r)
+    #db = uny_litebase('oligomap_history_2.db')
+    #print(db.get_table_col_names('main_tab'))
+    #data = db.get_all_tab_data('main_tab')
+    #for r in data:
+    #    print(r)
 
     #db = uny_litebase('stock_oligolab_5.db')
     #print(db.get_table_col_names('output_tab'))
