@@ -334,6 +334,7 @@ def special_get_all_invoces(db_name):
                 d['formul%'] = f"{counts['formulation']}" #round(counts['formulation'] * 100 / counts['total'])
                 d['fin%'] = f"{counts['finished']} / {counts['total']}" #round(counts['finished'] * 100 / counts['total'])
                 d['archived%'] = round(counts['arhive'] * 100 / counts['total'])
+                #commit
                 d['send'] = json.loads(row[3])['send']
 
                 out.append(d)
