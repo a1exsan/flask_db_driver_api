@@ -355,6 +355,15 @@ def special_get_all_invoces_by_order(db_name):
         out_list.append({'client': client_data[0][2], 'invoce': client_data[0][1]})
     return out_list, 200
 
+@app.route('/send_invoces_update/<db_name>', methods=['PUT'])
+@auth.login_required
+def special_send_invoces_update(db_name):
+    uny_db_driver.history_agent(request, auth)
+    send_invoce_list = json.loads(request.json)
+    db = uny_db_driver.uny_litebase(db_name)
+    for row in send_invoce_list:
+        db.update_data(tab_name='invoice_tab', id=row['id'], name_list=['params'], value_list=[row['send_param']])
+    return '', 200
 
 @app.route('/get_remaining_stock/<db_name>/<unicode>', methods=['GET'])
 @auth.login_required
