@@ -5,6 +5,8 @@ import qrcode_work
 import stock_db_driver as db_manager
 import solutions_db_driver as sol_db_manager
 import interval_jobs
+import stat_unit
+import json
 
 
 class users():
@@ -40,14 +42,26 @@ def send_text_message(text, user_id):
 
 def create_menu_in_out(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    item1 = types.KeyboardButton("Списание")
-    item2 = types.KeyboardButton("Приход")
-    item3 = types.KeyboardButton("Остаток")
-    item4 = types.KeyboardButton("Растворы")
-    item5 = types.KeyboardButton("PIN")
-    markup.add(item1, item2, item3)
-    markup.add(item4, item5)
-    bot.send_message(message.chat.id, 'Выберите что вам надо', reply_markup=markup)
+    #print(message.chat.id)
+    if message.chat.id in [1848570232]:
+        item1 = types.KeyboardButton("Списание")
+        item2 = types.KeyboardButton("Приход")
+        item3 = types.KeyboardButton("Остаток")
+        item4 = types.KeyboardButton("Растворы")
+        item5 = types.KeyboardButton("PIN")
+        item6 = types.KeyboardButton("STAT")
+        markup.add(item1, item2, item3)
+        markup.add(item4, item5, item6)
+        bot.send_message(message.chat.id, 'Выберите что вам надо', reply_markup=markup)
+    else:
+        item1 = types.KeyboardButton("Списание")
+        item2 = types.KeyboardButton("Приход")
+        item3 = types.KeyboardButton("Остаток")
+        item4 = types.KeyboardButton("Растворы")
+        item5 = types.KeyboardButton("PIN")
+        markup.add(item1, item2, item3)
+        markup.add(item4, item5)
+        bot.send_message(message.chat.id, 'Выберите что вам надо', reply_markup=markup)
 
 def create_solutions_menu(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -65,6 +79,16 @@ def create_menu_yes_no(message):
     markup.add(item1)
     markup.add(item2)
     bot.send_message(message.chat.id, 'Подтвердить операцию?', reply_markup=markup)
+
+def create_statistics_menu(message):
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    item1 = types.KeyboardButton("Общая статистика")
+    item2 = types.KeyboardButton("Заказы в работе")
+    item3 = types.KeyboardButton("За сегодня")
+    item4 = types.KeyboardButton("sСклад")
+    markup.add(item1, item2)
+    markup.add(item3, item4)
+    bot.send_message(message.chat.id, 'Выберите что вам надо', reply_markup=markup)
 
 @bot.message_handler(commands=['dumpdb'])
 def dump_db(message):
@@ -191,6 +215,21 @@ def send_menu_in_out(message):
             pin_manager = interval_jobs.pincode_manager()
             pins = pin_manager.get_pins()
             bot.reply_to(message, f'Ваш код: {pins[c_u]}')
+
+        elif message.text == 'STAT':
+            create_statistics_menu(message)
+        elif message.text == 'Общая статистика':
+            st_hist = stat_unit.status_history_stat()
+            data = json.loads(st_hist.get_last_update()[3])
+            #print(data)
+            bot.reply_to(message, f'Статистика по олигонуклеотидам:')
+            bot.reply_to(message, f"очередь: {data['in queue']}")
+            bot.reply_to(message, f"синтез: {data['synthesis']}")
+            bot.reply_to(message, f"очистка: {data['purification']}")
+            bot.reply_to(message, f"лиофилизация: {data['formulation']}")
+            bot.reply_to(message, f"готово: {data['finished']}")
+
+
 
 
 
