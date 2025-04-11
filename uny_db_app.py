@@ -112,6 +112,8 @@ def insert_data(db_name, tab_name):
 def update_data(db_name, tab_name, record_id):
     hist = uny_db_driver.history_agent(request, auth)
     hist.write_oligomap_data()
+
+    hist.update_oligo_status_history()
     #r = requests.put('http://127.0.0.1:8881/update_data/test_1.db/main_tab/10',
     # json=json.dumps({'name_list':['name', 'text'],'value_list':['test_name','CONTENT111']}))
 

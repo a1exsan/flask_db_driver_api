@@ -8,6 +8,7 @@ class db_tabs():
         self.maps_db = 'asm2000_map_1.db'
         self.hist_maps_db = 'oligomap_history_2.db'
         self.stock_db = 'stock_oligolab_5'
+        self.status_hist_db = 'oligo_status_history_1.db'
 
 class ordrs_statistic():
     def __init__(self):
@@ -54,6 +55,24 @@ class ordrs_statistic():
             d[status] = df_1.shape[0]
         return d
 
+class status_history_stat():
+    def __init__(self):
+        self.db = db_tabs()
+
+    def show_status_history(self):
+        db = uny_db_driver.uny_litebase(self.db.status_hist_db)
+        data = db.get_all_tab_data('main_tab')
+        return data
+
+    def get_last_update(self):
+        db = uny_db_driver.uny_litebase(self.db.status_hist_db)
+        data = db.get_last_record_data('main_tab')
+        return data[0]
+
+    def get_last_date_time(self):
+        data = self.get_last_update()
+        return data[1], data[2]
+
 
 def test1():
     st1 = ordrs_statistic()
@@ -64,5 +83,11 @@ def test1():
                                     all_data=False),
                                     )
 
+def test2():
+    st_hist = status_history_stat()
+    print(st_hist.get_last_date_time())
+    for i in st_hist.show_status_history():
+        print(i)
+
 if __name__ == '__main__':
-    test1()
+    test2()

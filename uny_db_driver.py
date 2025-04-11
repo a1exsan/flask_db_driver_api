@@ -1,4 +1,5 @@
 import datetime
+from datetime import timedelta
 import sqlite3
 import pandas as pd
 import json
@@ -12,6 +13,7 @@ class history_agent():
         self.request = request
         self.auth = auth
         self.write_data()
+        self.update_hist_const = 20
 
     def write_data(self):
         date = datetime.datetime.now().date().strftime("%d.%m.%Y")
@@ -29,14 +31,30 @@ class history_agent():
         db = uny_litebase(self.db_data_name)
         db.insert_data('main_tab', [user_name, date, time, self.request.url, self.request.json])
 
-        db = uny_litebase(self.db_status_hist)
-        st1 = stat_unit.ordrs_statistic()
-        stat_dict = st1.get_total_status_stat(
+    def update_oligo_status_history(self):
+        date = datetime.datetime.now().date().strftime("%d.%m.%Y")
+        time = datetime.datetime.now().time().strftime("%H:%M:%S")
+
+        st_hist = stat_unit.status_history_stat()
+        last_date, last_time = st_hist.get_last_date_time()
+
+        t1 = datetime.datetime.strptime(f"{last_date} {last_time}", "%d.%m.%Y %H:%M:%S")
+        t2 = datetime.datetime.now()
+
+        x = t2 - timedelta(minutes=self.update_hist_const)
+        #print(x)
+        #print(t1)
+        #print(x > t1)
+
+        if x > t1:
+            db = uny_litebase(self.db_status_hist)
+            st1 = stat_unit.ordrs_statistic()
+            stat_dict = st1.get_total_status_stat(
             st1.get_total_oligos_tab(),
             datetime.datetime.strptime('01.08.2024', "%d.%m.%Y"),
             datetime.datetime.strptime('01.09.2024', "%d.%m.%Y"),
             all_data=True)
-        db.insert_data('main_tab', [date, time, json.dumps(stat_dict)])
+            db.insert_data('main_tab', [date, time, json.dumps(stat_dict)])
 
 
 
@@ -180,6 +198,17 @@ class uny_litebase():
         cursor = connection.cursor()
 
         cursor.execute(f'SELECT * FROM {tab_name}')
+
+        results = cursor.fetchall()
+        connection.close()
+
+        return results
+
+    def get_last_record_data(self, tab_name):
+        connection = sqlite3.connect(self.base_name)
+        cursor = connection.cursor()
+
+        cursor.execute(f'SELECT * FROM {tab_name} ORDER BY rowid DESC LIMIT 1')
 
         results = cursor.fetchall()
         connection.close()
