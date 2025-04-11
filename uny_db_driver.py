@@ -48,7 +48,7 @@ class history_agent():
 
         if x > t1:
             db = uny_litebase(self.db_status_hist)
-            st1 = stat_unit.ordrs_statistic()
+            st1 = stat_unit.orders_statistic()
             stat_dict = st1.get_total_status_stat(
             st1.get_total_oligos_tab(),
             datetime.datetime.strptime('01.08.2024', "%d.%m.%Y"),

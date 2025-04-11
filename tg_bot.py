@@ -85,9 +85,12 @@ def create_statistics_menu(message):
     item1 = types.KeyboardButton("Общая статистика")
     item2 = types.KeyboardButton("Заказы в работе")
     item3 = types.KeyboardButton("За сегодня")
-    item4 = types.KeyboardButton("sСклад")
+    item4 = types.KeyboardButton("За 5 дней")
+    item5 = types.KeyboardButton("За 30 дней")
+    item6 = types.KeyboardButton("sСклад")
     markup.add(item1, item2)
-    markup.add(item3, item4)
+    markup.add(item3, item4, item5)
+    markup.add(item6)
     bot.send_message(message.chat.id, 'Выберите что вам надо', reply_markup=markup)
 
 @bot.message_handler(commands=['dumpdb'])
@@ -222,13 +225,38 @@ def send_menu_in_out(message):
             st_hist = stat_unit.status_history_stat()
             data = json.loads(st_hist.get_last_update()[3])
             #print(data)
-            bot.reply_to(message, f'Статистика по олигонуклеотидам:')
+            bot.reply_to(message, f"Статистика по олигонуклеотидам на {st_hist.get_last_update()[1]} "
+                                  f"{st_hist.get_last_update()[2]}:")
             bot.reply_to(message, f"очередь: {data['in queue']}")
             bot.reply_to(message, f"синтез: {data['synthesis']}")
             bot.reply_to(message, f"очистка: {data['purification']}")
             bot.reply_to(message, f"лиофилизация: {data['formulation']}")
             bot.reply_to(message, f"готово: {data['finished']}")
 
+        elif message.text == 'Заказы в работе':
+            stat = stat_unit.orders_statistic()
+            data = stat.get_orders_in_progress()
+            #print(data)
+            for row in data:
+                bot.reply_to(message, str(row))
+
+        elif message.text == 'За сегодня':
+            st_hist = stat_unit.status_history_stat()
+            data = st_hist.get_last_x_days_period(days=1)
+            for key in data.keys():
+                bot.reply_to(message, f"{key}: {data[key]}")
+
+        elif message.text == 'За 5 дней':
+            st_hist = stat_unit.status_history_stat()
+            data = st_hist.get_last_x_days_period(days=5)
+            for key in data.keys():
+                bot.reply_to(message, f"{key}: {data[key]}")
+
+        elif message.text == 'За 30 дней':
+            st_hist = stat_unit.status_history_stat()
+            data = st_hist.get_last_x_days_period(days=30)
+            for key in data.keys():
+                bot.reply_to(message, f"{key}: {data[key]}")
 
 
 

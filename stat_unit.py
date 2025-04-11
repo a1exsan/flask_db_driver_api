@@ -1,6 +1,8 @@
 import pandas as pd
 import uny_db_driver
 from datetime import datetime
+from datetime import timedelta
+import json
 
 class db_tabs():
     def __init__(self):
@@ -10,7 +12,7 @@ class db_tabs():
         self.stock_db = 'stock_oligolab_5'
         self.status_hist_db = 'oligo_status_history_1.db'
 
-class ordrs_statistic():
+class orders_statistic():
     def __init__(self):
         self.db = db_tabs()
 
@@ -55,6 +57,79 @@ class ordrs_statistic():
             d[status] = df_1.shape[0]
         return d
 
+    def get_counts(self, order_list):
+        d = {}
+        d['in queue'] = 0
+        d['synthesis'] = 0
+        d['purification'] = 0
+        d['formulation'] = 0
+        d['finished'] = 0
+        d['arhive'] = 0
+        d['total'] = 0
+
+        for row in order_list:
+            d['out date'] = row[4]
+            d[row[5]] += 1
+            d['total'] += 1
+        return d
+
+    def is_all_finished(self, order_list):
+        ctrl = True
+        for row in order_list:
+            if row[5] not in ['finished', 'arhive']:
+                ctrl = False
+                break
+        return ctrl
+
+    def get_all_invoces_tab(self):
+        try:
+            db = uny_db_driver.uny_litebase(self.db.orders_db)
+            data = db.get_all_tab_data('invoice_tab')
+
+            out = []
+            for row in data:
+                d = {}
+                orders_list = db.get_all_tab_data_by_keys('orders_tab', 'order_id', row[0])
+                counts = self.get_counts(orders_list)
+                if len(orders_list) > 0:
+                    if self.is_all_finished(orders_list):
+                        d['#'] = row[0]
+                        d['invoce'] = row[1]
+                        d['client'] = row[2]
+                        d['input date'] = orders_list[0][3]
+                        d['status'] = 'complited'
+                    else:
+                        d['#'] = row[0]
+                        d['invoce'] = row[1]
+                        d['client'] = row[2]
+                        d['input date'] = orders_list[0][3]
+                        d['status'] = 'in progress'
+
+                    d['out date'] = counts['out date']
+                    d['number'] = counts['total']
+                    d['in queue%'] = f"{counts['in queue']}"  # round(counts['in queue'] * 100 / counts['total'])
+                    d['synth%'] = f"{counts['synthesis']}"  # round(counts['synthesis'] * 100 / counts['total'])
+                    d['purif%'] = f"{counts['purification']}"  # round(counts['purification'] * 100 / counts['total'])
+                    d['formul%'] = f"{counts['formulation']}"  # round(counts['formulation'] * 100 / counts['total'])
+                    d[
+                        'fin%'] = f"{counts['finished']} / {counts['total']}"  # round(counts['finished'] * 100 / counts['total'])
+                    d['archived%'] = round(counts['arhive'] * 100 / counts['total'])
+                    # commit
+                    d['send'] = json.loads(row[3])['send']
+
+                    out.append(d)
+            return out
+        except:
+            return []
+
+    def get_orders_in_progress(self):
+        data = self.get_all_invoces_tab()
+        out = []
+        for row in data:
+            if row['status'] == 'in progress' or not row['send']:
+                out.append(row)
+        return out
+
 class status_history_stat():
     def __init__(self):
         self.db = db_tabs()
@@ -73,9 +148,29 @@ class status_history_stat():
         data = self.get_last_update()
         return data[1], data[2]
 
+    def get_last_x_days_period(self, days=5):
+        data = self.show_status_history()
+        out = []
+        for row in data:
+            d = {}
+            d['date'] = datetime.strptime(f"{row[1]} {row[2]}", "%d.%m.%Y %H:%M:%S")
+            d['stat'] = row[3]
+            out.append(d)
+        df = pd.DataFrame(out)
+        df = df[df['date'] >= datetime.now() - timedelta(days=days)]
+        first = json.loads(df.loc[0]['stat'])
+        last = json.loads(df.loc[df.shape[0]-1]['stat'])
+        ret = {}
+        ret['in queue'] = abs(last['in queue'] - first['in queue'])
+        ret['synthesis'] = abs(last['synthesis'] - first['synthesis'])
+        ret['purification'] = abs(last['purification'] - first['purification'])
+        ret['formulation'] = abs(last['formulation'] - first['formulation'])
+        ret['finished'] = abs(last['finished'] - first['finished'])
+        return ret
+
 
 def test1():
-    st1 = ordrs_statistic()
+    st1 = orders_statistic()
     print(st1.get_total_status_stat(
                                     st1.get_total_oligos_tab(),
                                     datetime.strptime('01.08.2024', "%d.%m.%Y"),
@@ -88,6 +183,8 @@ def test2():
     print(st_hist.get_last_date_time())
     for i in st_hist.show_status_history():
         print(i)
+
+    print(st_hist.get_last_x_days_period(days=5))
 
 if __name__ == '__main__':
     test2()
