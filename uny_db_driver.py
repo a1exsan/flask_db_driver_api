@@ -2,11 +2,13 @@ import datetime
 import sqlite3
 import pandas as pd
 import json
+import stat_unit
 
 class history_agent():
     def __init__(self, request, auth):
         self.db_name = 'request_history_1.db'
         self.db_data_name = 'oligomap_history_2.db'
+        self.db_status_hist = 'oligo_status_history_1.db'
         self.request = request
         self.auth = auth
         self.write_data()
@@ -26,6 +28,15 @@ class history_agent():
 
         db = uny_litebase(self.db_data_name)
         db.insert_data('main_tab', [user_name, date, time, self.request.url, self.request.json])
+
+        db = uny_litebase(self.db_status_hist)
+        st1 = stat_unit.ordrs_statistic()
+        stat_dict = st1.get_total_status_stat(
+            st1.get_total_oligos_tab(),
+            datetime.datetime.strptime('01.08.2024', "%d.%m.%Y"),
+            datetime.datetime.strptime('01.09.2024', "%d.%m.%Y"),
+            all_data=True)
+        db.insert_data('main_tab', [date, time, json.dumps(stat_dict)])
 
 
 
@@ -311,6 +322,15 @@ def create_omap_history_table():
 
     db.create_tables()
 
+def create_status_hystory_table():
+    db = uny_litebase('oligo_status_history_1.db')
+
+    db.add_item('main_tab', 'date', 'VARCHAR(255)')
+    db.add_item('main_tab', 'time', 'VARCHAR(255)')
+    db.add_item('main_tab', 'status_dict', 'VARCHAR(255)')
+
+    db.create_tables()
+
 
 def show_all_tabs():
     db = uny_litebase('stock_oligolab_5.db')
@@ -355,6 +375,7 @@ def rewrite_stock_db():
 
 if __name__ == '__main__':
     #create('test')
+    #create_status_hystory_table()
     show_all_tabs()
     #create_file_base()
     #create_monitor_data_base()
