@@ -236,7 +236,12 @@ def send_menu_in_out(message):
         elif message.text == 'Заказы в работе':
             stat = stat_unit.orders_statistic()
             data = stat.get_orders_in_progress()
-            #print(data)
+            if len(data) < 5 and len(data) > 1:
+                bot.reply_to(message, f"В работе {len(data)} заказа:")
+            elif len(data) > 4:
+                bot.reply_to(message, f"В работе {len(data)} заказов:")
+            else:
+                bot.reply_to(message, f"В работе {len(data)} заказ:")
             for row in data:
                 bot.reply_to(message, str(row))
 
