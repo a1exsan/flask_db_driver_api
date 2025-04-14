@@ -157,15 +157,24 @@ class status_history_stat():
             d['stat'] = row[3]
             out.append(d)
         df = pd.DataFrame(out)
+        df.sort_values('date', ascending=True, inplace=True)
         df = df[df['date'] >= datetime.now() - timedelta(days=days)]
-        first = json.loads(df.loc[0]['stat'])
-        last = json.loads(df.loc[df.shape[0]-1]['stat'])
+        df.reset_index(inplace=True)
         ret = {}
-        ret['in queue'] = abs(last['in queue'] - first['in queue'])
-        ret['synthesis'] = abs(last['synthesis'] - first['synthesis'])
-        ret['purification'] = abs(last['purification'] - first['purification'])
-        ret['formulation'] = abs(last['formulation'] - first['formulation'])
-        ret['finished'] = abs(last['finished'] - first['finished'])
+        if df.shape[0] > 0:
+            first = json.loads(df.loc[0]['stat'])
+            last = json.loads(df.loc[df.shape[0]-1]['stat'])
+            ret['in queue'] = abs(last['in queue'] - first['in queue'])
+            ret['synthesis'] = abs(last['synthesis'] - first['synthesis'])
+            ret['purification'] = abs(last['purification'] - first['purification'])
+            ret['formulation'] = abs(last['formulation'] - first['formulation'])
+            ret['finished'] = abs(last['finished'] - first['finished'])
+        else:
+            ret['in queue'] = 0
+            ret['synthesis'] = 0
+            ret['purification'] = 0
+            ret['formulation'] = 0
+            ret['finished'] = 0
         return ret
 
 
@@ -184,7 +193,38 @@ def test2():
     for i in st_hist.show_status_history():
         print(i)
 
-    print(st_hist.get_last_x_days_period(days=5))
+    print(st_hist.get_last_x_days_period(days=30))
+
+def compute_status_history_list():
+
+    days_inc = 1
+
+    init_date = datetime.strptime('01.05.2024', "%d.%m.%Y")
+    final_date = datetime.strptime('11.04.2025', "%d.%m.%Y")
+    date = init_date + timedelta(days=days_inc)
+
+    db = uny_db_driver.uny_litebase('oligo_status_history_1.db')
+
+    while date < final_date:
+        st1 = orders_statistic()
+        data = st1.get_total_status_stat(
+        st1.get_total_oligos_tab(),
+        init_date,
+        date,
+        all_data=False)
+
+        print(date, data)
+
+        db.insert_data('main_tab', [
+                                                        date.date().strftime("%d.%m.%Y"),
+                                                        date.time().strftime("%H:%M:%S"),
+                                                        json.dumps(data)
+                                                    ])
+
+        date += timedelta(days=days_inc)
+
+
 
 if __name__ == '__main__':
-    test2()
+    #test2()
+    compute_status_history_list()

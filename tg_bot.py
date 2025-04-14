@@ -248,6 +248,7 @@ def send_menu_in_out(message):
         elif message.text == 'За сегодня':
             st_hist = stat_unit.status_history_stat()
             data = st_hist.get_last_x_days_period(days=1)
+            #print(data)
             for key in data.keys():
                 bot.reply_to(message, f"{key}: {data[key]}")
 
