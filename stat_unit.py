@@ -2,7 +2,9 @@ import pandas as pd
 import uny_db_driver
 from datetime import datetime
 from datetime import timedelta
+from dateutil.parser import *
 import json
+import plotly.figure_factory as ff
 
 class db_tabs():
     def __init__(self):
@@ -15,6 +17,37 @@ class db_tabs():
 class orders_statistic():
     def __init__(self):
         self.db = db_tabs()
+
+    def get_oligos_amount_data_maps(self):
+        db = uny_db_driver.uny_litebase(self.db.maps_db)
+        print(db.get_all_tables_name())
+        maps = db.get_all_tab_data('main_map')
+        out = {
+            'Order id': [],
+            'Sequence': [],
+            'Purif type': [],
+            'Support type': [],
+            'Date': [],
+            'Scale, OE': [],
+            'CPG, mg': [],
+            'Status': [],
+            'Dens, oe/ml': [],
+            'Vol, ml': [],
+            'Purity, %': [],
+            'Done LCMS': [],
+            'Done cart':[],
+            'Done hplc': [],
+            'Wasted': []
+        }
+        for row in maps:
+            df = pd.DataFrame(json.loads(row[4]))
+            for key in out.keys():
+                if key in list(df.keys()):
+                    out[key].extend(list(df[key]))
+                else:
+                    out[key].extend(['none'] * df.shape[0])
+        return out
+
 
     def get_total_oligos_tab(self):
         db = uny_db_driver.uny_litebase(self.db.orders_db)
@@ -122,6 +155,27 @@ class orders_statistic():
         except:
             return []
 
+    def extract_gantt_dataframe(self, from_date, to_date):
+        all_tab = self.get_all_invoces_tab()
+
+        gantt = []
+        for row in all_tab:
+            d = {}
+            d['Task'] = row['invoce']
+            d['Start'] = parse(row['input date'])
+            d['Finish'] = parse(row['out date'])
+            gantt.append(d)
+
+        f_date = parse(from_date)
+        t_date = parse(to_date)
+
+        df = pd.DataFrame(gantt)
+        df = df[df['Start'] >= f_date]
+        df = df[df['Finish'] <= t_date]
+
+        return df.to_dict('records')
+
+
     def get_orders_in_progress(self):
         data = self.get_all_invoces_tab()
         out = []
@@ -223,8 +277,22 @@ def compute_status_history_list():
 
         date += timedelta(days=days_inc)
 
+def test_gantt():
+    stat = orders_statistic()
+    tab = stat.extract_gantt_dataframe('21.03.25', '11.05.25')
+    print(pd.DataFrame(tab))
+    fig = ff.create_gantt(tab)
+    fig.show()
+
+def maps_amount():
+    stat = orders_statistic()
+    data = stat.get_oligos_amount_data_maps()
+    df = pd.DataFrame(data)
+    print(df)
+    df.to_csv('maps_extract_data_080525.csv', sep='\t', index=False)
+
 
 
 if __name__ == '__main__':
-    #test2()
-    compute_status_history_list()
+    maps_amount()
+    #compute_status_history_list()
